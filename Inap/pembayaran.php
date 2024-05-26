@@ -1,5 +1,5 @@
 <?php
-session_start();
+require 'config.php';
 
 if (!isset($_SESSION['pesan_data'])) {
     header('Location: pesan.php');
@@ -8,11 +8,8 @@ if (!isset($_SESSION['pesan_data'])) {
 
 $pesan_data = $_SESSION['pesan_data'];
 
-// Jika tombol pembayaran diklik
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require 'config.php';
-
-    // Masukkan data ke tabel kwitansi
+    // Simpan data ke tabel kwitansi
     $tgl_pesan = $pesan_data['tgl_pesan'];
     $total_biaya = $pesan_data['total_biaya'];
 
@@ -21,14 +18,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param('sd', $tgl_pesan, $total_biaya);
 
     if ($stmt->execute()) {
-        // Hapus data pesanan dari session setelah pembayaran berhasil
-        unset($_SESSION['pesan_data']);
+        // Ambil ID terakhir yang diinsert
+        $kode_kwitansi = $conn->insert_id;
+
+        // Simpan kode kwitansi ke dalam session
+        $_SESSION['kode_kwitansi'] = $kode_kwitansi;
 
         // Redirect ke halaman kwitansi
         header('Location: kwitansi.php');
         exit();
     } else {
-        echo "Gagal menyimpan data pembayaran ke dalam tabel kwitansi.";
+        $error = "Terjadi kesalahan saat menyimpan data.";
     }
 }
 ?>
@@ -43,16 +43,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="pembayaran-container">
-        <h2>Data Pemesanan</h2>
-        <p><strong>Nama Pemesan:</strong> <?php echo $pesan_data['nama_pemesan']; ?></p>
-        <p><strong>No Kamar:</strong> <?php echo $pesan_data['id_kamar']; ?></p>
-        <p><strong>Tanggal Pesan:</strong> <?php echo $pesan_data['tgl_pesan']; ?></p>
-        <p><strong>Lama Inap:</strong> <?php echo $pesan_data['lama_inap']; ?> malam</p>
-        <p><strong>Total Biaya:</strong> <?php echo $pesan_data['total_biaya']; ?></p>
-        <h2>Pilih Metode Pembayaran</h2>
-        <form action="" method="POST">
-            <button type="submit" name="pembayaran"><a href="kwitansi.php">Pembayaran QRIS</button>
-            <button type="submit" name="pembayaran"><a href="kwitansi.php">Pembayaran Bank</button>
+        <h2>Pembayaran</h2>
+        <?php if (isset($error)): ?>
+            <p><?php echo $error; ?></p>
+        <?php endif; ?>
+        <p><strong>Nama Pemesan:</strong> <?php echo htmlspecialchars($pesan_data['nama_pemesan']); ?></p>
+        <p><strong>No Kamar:</strong> <?php echo htmlspecialchars($pesan_data['id_kamar']); ?></p>
+        <p><strong>Total Biaya:</strong> <?php echo htmlspecialchars($pesan_data['total_biaya']); ?></p>
+        <form action="pembayaran.php" method="POST">
+            <button type="submit">Bayar</button>
         </form>
     </div>
 </body>

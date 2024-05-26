@@ -1,5 +1,6 @@
 <?php
 require 'config.php';
+
 ?>
 
 <!DOCTYPE html>
@@ -13,17 +14,18 @@ require 'config.php';
 <body>
     <header>
         <div class="container">
-            <h1>Welcome to Grahito Hotel</h1>
-            <div class="menu">
-                <ul>
-                <li><a href="index.php">Home</a></li>
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <li><a href="dashboard.php">Dashboard</a></li>
-                        <li><a href="logout.php">Logout</a></li> 
-                    <?php else: ?>
-                        <li><a href="login.php">Login</a></li>
+            <h1>Welcome to Our Hotel</h1>
+            <div class="login-button">
+            <a href="index.php" class="button">Home</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="logout.php" class="button">Logout</a>
+                    <a href="dashboard.php" class="button">Dashboard</a>
+                    <?php if (isset($_SESSION['pesan_data'])): ?>
+                        <a href="ubah.php" class="button">Ubah Pesanan</a>
                     <?php endif; ?>
-                </ul>
+                <?php else: ?>
+                    <a href="login.php" class="button">Login</a>
+                <?php endif; ?>
             </div>
         </div>
     </header>

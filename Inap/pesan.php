@@ -16,6 +16,8 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $kamar_options[$row['id_kamar']] = $row['tipe_kamar'];
     }
+} else {
+    $error = "Tidak ada kamar yang tersedia.";
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -48,18 +50,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Hitung total biaya berdasarkan harga kamar dan lama inap
             $total_biaya = $harga_kamar * $lama_inap;
 
-            // Redirect to pembayaran.php with POST data
-            $_SESSION['pesan_data'] = array(
-                'no_ktp' => $no_ktp,
-                'id_kamar' => $id_kamar,
-                'nama_pemesan' => $nama_pemesan,
-                'no_tlp' => $no_tlp,
-                'tgl_pesan' => $tgl_pesan,
-                'lama_inap' => $lama_inap,
-                'total_biaya' => $total_biaya
-            );
-            header('Location: pembayaran.php');
-            exit();
+            // Simpan pesanan ke database
+            $sql_insert = "INSERT INTO Pemesan (no_ktp, id_kamar, nama_pemesan, no_tlp, tgl_pesan, lama_inap, total_biaya) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt_insert = $conn->prepare($sql_insert);
+            $stmt_insert->bind_param('sisssii', $no_ktp, $id_kamar, $nama_pemesan, $no_tlp, $tgl_pesan, $lama_inap, $total_biaya);
+
+            if ($stmt_insert->execute()) {
+                // Update status kamar menjadi terisi
+                $sql_update = "UPDATE kamar SET status_kamar = 'terisi' WHERE id_kamar = ?";
+                $stmt_update = $conn->prepare($sql_update);
+                $stmt_update->bind_param('i', $id_kamar);
+                $stmt_update->execute();
+
+                // Simpan data pesanan ke sesi
+                $_SESSION['pesan_data'] = array(
+                    'no_ktp' => $no_ktp,
+                    'id_kamar' => $id_kamar,
+                    'nama_pemesan' => $nama_pemesan,
+                    'no_tlp' => $no_tlp,
+                    'tgl_pesan' => $tgl_pesan,
+                    'lama_inap' => $lama_inap,
+                    'total_biaya' => $total_biaya
+                );
+
+                // Redirect to pembayaran.php
+                header('Location: pembayaran.php');
+                exit();
+            } else {
+                $error = "Gagal menyimpan pesanan ke database.";
+            }
         } else {
             $error = "Kamar tidak ditemukan.";
         }
@@ -86,18 +105,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p><?php echo $success; ?></p>
         <?php endif; ?>
         <form action="pesan.php" method="POST">
-            <input type="text" name="no_ktp" placeholder="No KTP" required>
-            <select name="id_kamar" required>
-    <option value="" selected disabled>Pilih Kamar</option>
-    <?php foreach ($kamar_options as $id => $tipe): ?>
-        <?php $option_label = "$id - $tipe"; ?>
-        <option value="<?php echo $id; ?>"><?php echo $option_label; ?></option>
-    <?php endforeach; ?>
+            <label for="no_ktp">No KTP:</label>
+            <input type="text" id="no_ktp" name="no_ktp" placeholder="No KTP" required>
+            
+            <label for="id_kamar">Pilih Kamar:</label>
+            <select id="id_kamar" name="id_kamar" required>
+                <option value="" selected disabled>Pilih Kamar</option>
+                <?php foreach ($kamar_options as $id => $tipe): ?>
+                    <?php $option_label = "$id - $tipe"; ?>
+                    <option value="<?php echo $id; ?>"><?php echo $option_label; ?></option>
+                <?php endforeach; ?>
             </select>
-            <input type="text" name="nama_pemesan" placeholder="Nama Pemesan" required>
-            <input type="text" name="no_tlp" placeholder="No Telepon" required>
-            <input type="date" name="tgl_pesan" placeholder="Tanggal Pesan" required>
-            <input type="number" name="lama_inap" placeholder="Lama Inap (malam)" required>
+            
+            <label for="nama_pemesan">Nama Pemesan:</label>
+            <input type="text" id="nama_pemesan" name="nama_pemesan" placeholder="Nama Pemesan" required>
+            
+            <label for="no_tlp">No Telepon:</label>
+            <input type="text" id="no_tlp" name="no_tlp" placeholder="No Telepon" required>
+            
+            <label for="tgl_pesan">Tanggal Pesan:</label>
+            <input type="date" id="tgl_pesan" name="tgl_pesan" placeholder="Tanggal Pesan" required>
+            
+            <label for="lama_inap">Lama Inap (malam):</label>
+            <input type="number" id="lama_inap" name="lama_inap" placeholder="Lama Inap (malam)" required>
+            
             <!-- Input total_biaya tidak diperlukan karena dihitung -->
             <button type="submit">Pesan</button>
         </form>

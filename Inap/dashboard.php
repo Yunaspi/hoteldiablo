@@ -31,13 +31,18 @@ if ($result->num_rows > 0) {
     <header>
         <div class="container">
             <h1>Welcome to Your Dashboard</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="dashboard.php">Dashboard</a></li>
-                    <li><a href="logout.php">Logout</a></li>
-                </ul>
-            </nav>
+            <div class="login-button">
+            <a href="index.php" class="button">Home</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="logout.php" class="button">Logout</a>
+                    <a href="dashboard.php" class="button">Dashboard</a>
+                    <?php if (isset($_SESSION['pesan_data'])): ?>
+                        <a href="ubah.php" class="button">Ubah Pesanan</a>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <a href="login.php" class="button">Login</a>
+                <?php endif; ?>
+            </div>
         </div>
     </header>
     <main>
