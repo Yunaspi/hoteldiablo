@@ -1,7 +1,6 @@
 <?php
 require 'config.php';
 
-
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
@@ -26,10 +25,22 @@ if ($result->num_rows > 0) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['hapus'])) {
         // Hapus pesanan
-        unset($_SESSION['pesan_data']);
-        // Redirect ke index.php setelah menghapus pesanan
-        header('Location: index.php');
-        exit();
+        $id_kamar = $pesan_data['id_kamar'];
+        $sql_delete = "DELETE FROM Pemesan WHERE id_kamar = ?";
+        $stmt_delete = $conn->prepare($sql_delete);
+        $stmt_delete->bind_param('i', $id_kamar);
+        if ($stmt_delete->execute()) {
+            // Update status_kamar menjadi tersedia
+            $sql_update = "UPDATE kamar SET status_kamar = 'tersedia' WHERE id_kamar = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param('i', $id_kamar);
+            $stmt_update->execute();
+
+            unset($_SESSION['pesan_data']);
+            $success = "Pesanan berhasil dihapus.";
+        } else {
+            $error = "Gagal menghapus pesanan.";
+        }
     } else {
         $no_ktp = $_POST['no_ktp'];
         $id_kamar = $_POST['id_kamar'];
@@ -52,26 +63,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Hitung total biaya berdasarkan harga kamar dan lama inap
             $total_biaya = $harga_kamar * $lama_inap;
 
-            // Simpan perubahan ke dalam session
-            $_SESSION['pesan_data'] = array(
-                'no_ktp' => $no_ktp,
-                'id_kamar' => $id_kamar,
-                'nama_pemesan' => $nama_pemesan,
-                'no_tlp' => $no_tlp,
-                'tgl_pesan' => $tgl_pesan,
-                'lama_inap' => $lama_inap,
-                'total_biaya' => $total_biaya // Perbarui total biaya di session
-            );
+            // Perbarui pesanan di database
+            $sql_update = "UPDATE Pemesan SET no_ktp=?, id_kamar=?, nama_pemesan=?, no_tlp=?, tgl_pesan=?, lama_inap=?, total_biaya=? WHERE id_kamar=?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param('sisssiii', $no_ktp, $id_kamar, $nama_pemesan, $no_tlp, $tgl_pesan, $lama_inap, $total_biaya, $id_kamar);
 
-            // Redirect to pembayaran.php with updated data
-            header('Location: pembayaran.php');
-            exit();
+            if ($stmt_update->execute()) {
+                // Simpan perubahan ke dalam session
+                $_SESSION['pesan_data'] = array(
+                    'no_ktp' => $no_ktp,
+                    'id_kamar' => $id_kamar,
+                    'nama_pemesan' => $nama_pemesan,
+                    'no_tlp' => $no_tlp,
+                    'tgl_pesan' => $tgl_pesan,
+                    'lama_inap' => $lama_inap,
+                    'total_biaya' => $total_biaya
+                );
+
+                $success = "Pesanan berhasil diperbarui.";
+            } else {
+                $error = "Gagal memperbarui pesanan.";
+            }
         } else {
             $error = "Kamar tidak ditemukan.";
         }
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -112,12 +131,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="tgl_pesan">Tanggal Pesan:</label>
             <input type="date" id="tgl_pesan" name="tgl_pesan" placeholder="Tanggal Pesan" value="<?php echo $pesan_data['tgl_pesan']; ?>" required>
 
-            <label for="lama_inap">Lama Inap (malam):</label>
-            <input type="number" id="lama_inap" name="lama_inap" placeholder="Lama Inap (malam)" value="<?php echo $pesan_data['lama_inap']; ?>" required>
+<label for="lama_inap">Lama Inap (malam):</label>
+<input type="number" id="lama_inap" name="lama_inap" placeholder="Lama Inap (malam)" value="<?php echo $pesan_data['lama_inap']; ?>" required>
 
-            <button type="submit">Ubah Pesanan</button>
-            <button type="submit" name="hapus" value="hapus">Hapus Pesanan</button>
-        </form>
-    </div>
+<button type="submit">Ubah Pesanan</button>
+<button type="submit" name="hapus" value="hapus">Hapus Pesanan</button>
+<a href="index.php">Kembali ke Halaman Utama</a>
+</form>
+</div>
 </body>
 </html>
+

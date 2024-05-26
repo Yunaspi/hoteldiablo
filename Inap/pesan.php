@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result_check = $stmt_check->get_result();
 
     if ($result_check->num_rows === 1) {
-        // Ambil harga kamar dari database berdasarkan id_kamar
-        $sql = "SELECT harga_kamar FROM kamar WHERE id_kamar = ?";
+        // Ambil harga kamar dan tipe kamar dari database berdasarkan id_kamar
+        $sql = "SELECT harga_kamar, tipe_kamar FROM kamar WHERE id_kamar = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('i', $id_kamar);
         $stmt->execute();
@@ -46,14 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result->num_rows === 1) {
             $row = $result->fetch_assoc();
             $harga_kamar = $row['harga_kamar'];
+            $tipe_kamar = $row['tipe_kamar'];
             
             // Hitung total biaya berdasarkan harga kamar dan lama inap
             $total_biaya = $harga_kamar * $lama_inap;
 
             // Simpan pesanan ke database
-            $sql_insert = "INSERT INTO Pemesan (no_ktp, id_kamar, nama_pemesan, no_tlp, tgl_pesan, lama_inap, total_biaya) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql_insert = "INSERT INTO Pemesan (no_ktp, id_kamar, tipe_kamar, nama_pemesan, no_tlp, tgl_pesan, lama_inap, total_biaya) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
-            $stmt_insert->bind_param('sisssii', $no_ktp, $id_kamar, $nama_pemesan, $no_tlp, $tgl_pesan, $lama_inap, $total_biaya);
+            $stmt_insert->bind_param('sissssii', $no_ktp, $id_kamar, $tipe_kamar, $nama_pemesan, $no_tlp, $tgl_pesan, $lama_inap, $total_biaya);
 
             if ($stmt_insert->execute()) {
                 // Update status kamar menjadi terisi
@@ -66,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['pesan_data'] = array(
                     'no_ktp' => $no_ktp,
                     'id_kamar' => $id_kamar,
+                    'tipe_kamar' => $tipe_kamar,
                     'nama_pemesan' => $nama_pemesan,
                     'no_tlp' => $no_tlp,
                     'tgl_pesan' => $tgl_pesan,
