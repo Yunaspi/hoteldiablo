@@ -55,12 +55,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if (!empty($error)): ?>
             <p><?php echo $error; ?></p>
         <?php endif; ?>
+        <div class="teksow">
         <p><strong>Nama Pemesan:</strong> <?php echo htmlspecialchars($pesan_data['nama_pemesan']); ?></p>
         <p><strong>No Kamar:</strong> <?php echo htmlspecialchars($pesan_data['id_kamar']); ?></p>
         <p><strong>Total Biaya:</strong> <?php echo htmlspecialchars($pesan_data['total_biaya']); ?></p>
         <form action="pembayaran.php" method="POST">
             <button type="submit">Bayar</button>
         </form>
+        </div>
     </div>
 </body>
 </html>

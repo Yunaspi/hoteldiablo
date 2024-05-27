@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <button type="submit">Ubah Pesanan</button>
 <button type="submit" name="hapus" value="hapus">Hapus Pesanan</button>
-<a href="index.php">Kembali ke Halaman Utama</a>
+<a class="ubhu" href="index.php">Kembali ke Halaman Utama</a>
 </form>
 </div>
 </body>

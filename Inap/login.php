@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p><?php echo $error; ?></p>
         <?php endif; ?>
         <form action="login.php" method="POST">
-            <input type="text" name="username" placeholder="Username" required>
+            <input type="text" class="user" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>

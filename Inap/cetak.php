@@ -39,11 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kode_kwitansi'])) {
 <body>
     <div class="cetak-container">
         <h2>Kwitansi Pembayaran</h2>
+        <div class="teksow3">
         <p><strong>Kode Kwitansi:</strong> <?php echo htmlspecialchars($kwitansi['kode_kwitansi']); ?></p>
         <p><strong>Tanggal Pesan:</strong> <?php echo htmlspecialchars($kwitansi['tgl_pesan']); ?></p>
         <p><strong>Total Biaya:</strong> <?php echo htmlspecialchars($kwitansi['total_biaya']); ?></p>
+        </div>
         <div class="button-container">
-            <button onclick="window.print()">Cetak</button>
+            <button class="btnctk" onclick="window.print()">Cetak</button>
             <a href="index.php" class="button">Kembali ke Tampilan Utama</a>
         </div>
     </div>

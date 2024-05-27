@@ -39,11 +39,13 @@ if ($result->num_rows > 0) {
 <body>
     <div class="kwitansi-container">
         <h2>Kwitansi Pembayaran</h2>
+        <div class="teksow2">
         <p><strong>Nama Pemesan:</strong> <?php echo htmlspecialchars($pesan_data['nama_pemesan']); ?></p>
         <p><strong>No Kamar:</strong> <?php echo htmlspecialchars($pesan_data['id_kamar']); ?></p>
         <p><strong>Total Biaya:</strong> <?php echo htmlspecialchars($pesan_data['total_biaya']); ?></p>
         <p><strong>Kode Kwitansi:</strong> <?php echo htmlspecialchars($kwitansi['kode_kwitansi']); ?></p>
         <p><strong>Tanggal Pesan:</strong> <?php echo htmlspecialchars($kwitansi['tgl_pesan']); ?></p>
+        </div>
         <div class="button-container">
             <form action="cetak.php" method="POST">
                 <input type="hidden" name="kode_kwitansi" value="<?php echo htmlspecialchars($kwitansi['kode_kwitansi']); ?>">
